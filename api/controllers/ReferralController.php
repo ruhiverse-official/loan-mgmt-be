@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ .  '/../models/Referral.php';
+require_once __DIR__ . '/../models/Referral.php';
+require_once __DIR__ . '/../utils/Response.php';
 
 class ReferralController {
     private $referralModel;
@@ -11,41 +12,49 @@ class ReferralController {
 
     public function getAll() {
         $referrals = $this->referralModel->getAll();
-        echo json_encode(["status" => true, "data" => $referrals]);
+        Response::send(true, 'Referrals retrieved successfully', $referrals);
     }
 
     public function getById($id) {
         $referral = $this->referralModel->getById($id);
         if ($referral) {
-            echo json_encode(["status" => true, "data" => $referral]);
+            Response::send(true, 'Referral retrieved successfully', $referral);
         } else {
-            echo json_encode(["status" => false, "message" => "Referral not found"]);
+            Response::send(false, 'Referral not found');
         }
     }
 
     public function create() {
         $data = json_decode(file_get_contents("php://input"), true);
-        if ($this->referralModel->create($data)) {
-            echo json_encode(["status" => true, "message" => "Referral created successfully"]);
-        } else {
-            echo json_encode(["status" => false, "message" => "Failed to create referral"]);
+        
+        try {
+            if ($this->referralModel->create($data)) {
+                Response::send(true, 'Referral created successfully');
+            }
+        } catch (Exception $e) {
+            // Check for specific errors, like duplicate entry
+            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                Response::send(false, 'Mobile number already exists', ['error' => $e->getMessage()]);
+            } else {
+                Response::send(false, 'Failed to create account', ['error' => $e->getMessage()]);
+            }
         }
     }
 
     public function update($id) {
         $data = json_decode(file_get_contents("php://input"), true);
         if ($this->referralModel->update($id, $data)) {
-            echo json_encode(["status" => true, "message" => "Referral updated successfully"]);
+            Response::send(true, 'Referral updated successfully');
         } else {
-            echo json_encode(["status" => false, "message" => "Failed to update referral"]);
+            Response::send(false, 'Failed to update referral');
         }
     }
 
     public function delete($id) {
         if ($this->referralModel->delete($id)) {
-            echo json_encode(["status" => true, "message" => "Referral deleted successfully"]);
+            Response::send(true, 'Referral deleted successfully');
         } else {
-            echo json_encode(["status" => false, "message" => "Failed to delete referral"]);
+            Response::send(false, 'Failed to delete referral');
         }
     }
 }
