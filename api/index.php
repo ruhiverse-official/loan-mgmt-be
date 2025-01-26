@@ -2,6 +2,8 @@
 require_once "config/Database.php";
 require_once "controllers/AuthController.php";
 require_once "controllers/LoanController.php";
+require_once "controllers/ReferralController.php";
+require_once "controllers/AccountController.php";
 require_once "middlewares/AuthMiddleware.php";
 
 // Parse the URI and Method
@@ -16,22 +18,34 @@ $method = $_SERVER['REQUEST_METHOD'];
 // Initialize Controllers
 $authController = new AuthController();
 $loanController = new LoanController();
+$referralController = new ReferralController();
+$accountController = new AccountController();
 
 // Define Routes
 $routes = [
     "POST" => [
         "login" => [$authController, 'login'],
         "loans" => [$loanController, 'createLoan'], // Create
+        "referrals" => [$referralController, 'create'], // Create Referral
+        "accounts" => [$accountController, 'create'],  // Create Account
     ],
     "GET" => [
         "loans" => [$loanController, 'getAllLoans'], // List all loans
-        "loans/{id}" => [$loanController, 'getLoanById'], // Get a specific loan
+        "loans/{id}" => [$loanController, 'getLoanById'], // Get a specific loan,
+        "referrals" => [$referralController, 'getAll'], // List Referrals
+        "accounts" => [$accountController, 'getAll'],  // List Accounts
+        "referrals/{id}" => [$referralController, 'getById'], // Get Referral by ID
+        "accounts/{id}" => [$accountController, 'getById'],  // Get Account by ID
     ],
     "PUT" => [
         "loans/{id}" => [$loanController, 'updateLoan'], // Update
+        "referrals/{id}" => [$referralController, 'update'], // Update Referral
+        "accounts/{id}" => [$accountController, 'update'],   // Update Account
     ],
     "DELETE" => [
         "loans/{id}" => [$loanController, 'deleteLoan'], // Delete
+        "referrals/{id}" => [$referralController, 'delete'], // Delete Referral
+        "accounts/{id}" => [$accountController, 'delete'],   // Delete Account
     ]
 ];
 
