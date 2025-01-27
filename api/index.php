@@ -1,10 +1,14 @@
 <?php
+
 require_once "config/Database.php";
 require_once "controllers/AuthController.php";
 require_once "controllers/LoanController.php";
 require_once "controllers/ReferralController.php";
 require_once "controllers/AccountController.php";
 require_once "middlewares/AuthMiddleware.php";
+require_once "middlewares/CorsMiddleware.php";
+
+CorsMiddleware::handle();
 
 // Parse the URI and Method
 $scriptName = $_SERVER['SCRIPT_NAME']; // This includes 'index.php'
