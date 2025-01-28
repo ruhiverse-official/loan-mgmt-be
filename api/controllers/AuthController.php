@@ -21,8 +21,10 @@ class AuthController {
         $admin = $this->admin->login($data['username'], $data['password']);
         if ($admin) {
             $token = JwtHandler::generateToken(['id' => $admin['id'], 'username' => $admin['username']]);
+            http_response_code(200);
             Response::send(true, "Login successful", ['token' => $token]);
         } else {
+            http_response_code(401);
             Response::send(false, "Invalid credentials");
         }
     }
