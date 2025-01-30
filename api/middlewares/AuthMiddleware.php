@@ -1,4 +1,3 @@
-
 <?php
 require_once __DIR__ . '/../auth/JwtHandler.php';
 require_once __DIR__ . '/../utils/Response.php';

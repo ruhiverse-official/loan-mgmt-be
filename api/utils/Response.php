@@ -1,17 +1,23 @@
 <?php
-
 class Response {
     public static function send($status, $message, $data = null) {
-        // Clear any existing output buffer
-        if (ob_get_length()) {
-            ob_clean();
+        // Start output buffering if not already started
+        if (!ob_get_level()) {
+            ob_start();
+        }
+        
+        // Ensure headers are not already sent
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
         }
 
-        // Set the Content-Type header
-        header('Content-Type: application/json');
-
-        // Output the JSON response
+        // Clean buffer before sending JSON response
+        ob_clean();
+        
         echo json_encode(['status' => $status, 'message' => $message, 'data' => $data]);
+        
+        // Send output and stop execution
+        ob_end_flush();
         exit();
     }
 }
