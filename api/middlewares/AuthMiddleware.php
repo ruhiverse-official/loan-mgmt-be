@@ -8,6 +8,7 @@ class AuthMiddleware {
         $token = $headers['Authorization'] ?? null;
 
         if (!$token || !JwtHandler::validateToken($token)) {
+            http_response_code(401);
             Response::send(false, "Unauthorized access");
         }
     }
