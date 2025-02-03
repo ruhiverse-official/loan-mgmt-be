@@ -109,4 +109,50 @@ class Loan {
             'remaining_balance' => (float) $remaining_amount
         ];
     }
+
+    // Get All Referral Persons with Their Payment Details
+    public function getAllPersonsWithPendingAmounts($person_type) {
+        $table_name = ($person_type === 'Referral') ? 'referral_person' : 'account_person';
+        $person_id_field = ($person_type === 'Referral') ? 'referral_person_id' : 'account_person_id';
+        $commission_field = ($person_type === 'Referral') ? 'referral_commission_rate' : 'account_commission_rate';
+    
+        // Get all persons (Referral or Account)
+        $query = "SELECT id, name FROM " . $table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $persons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        foreach ($persons as &$person) {
+            $person_id = $person['id'];
+    
+            // Get total commission from approved loans
+            $loan_query = "SELECT SUM(approved_loan_amount * $commission_field / 100) AS total_commission
+                           FROM " . $this->table . " 
+                           WHERE status = 'Approved' 
+                           AND $person_id_field = :person_id";
+    
+            $stmt = $this->conn->prepare($loan_query);
+            $stmt->bindParam(":person_id", $person_id);
+            $stmt->execute();
+            $commission_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $person['total_commission'] = $commission_result['total_commission'] ?? 0;
+    
+            // Get total amount already paid
+            $payment_query = "SELECT SUM(amount) AS total_paid FROM payments 
+                              WHERE person_id = :person_id AND person_type = :person_type";
+    
+            $stmt = $this->conn->prepare($payment_query);
+            $stmt->bindParam(":person_id", $person_id);
+            $stmt->bindParam(":person_type", $person_type);
+            $stmt->execute();
+            $payment_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $person['total_paid'] = $payment_result['total_paid'] ?? 0;
+    
+            // Calculate remaining amount
+            $person['remaining_balance'] = $person['total_commission'] - $person['total_paid'];
+        }
+    
+        return $persons;
+    }
+    
 }

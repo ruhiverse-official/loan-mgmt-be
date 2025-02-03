@@ -77,4 +77,15 @@ class LoanController {
         $pending_commission = $this->loanModel->getPendingCommission($person_id, $person_type);
         Response::send(true, "Pending commission retrieved successfully", $pending_commission);
     }
+
+    // Get All Referral Persons with Their Payment Details
+    public function getAllPersonsWithPendingAmounts($person_type) {
+        if (!in_array($person_type, ['Referral', 'Account'])) {
+            Response::send(false, "Invalid person type. Must be 'Referral' or 'Account'.");
+        }
+    
+        $persons = $this->loanModel->getAllPersonsWithPendingAmounts($person_type);
+        Response::send(true, "List retrieved successfully", $persons);
+    }
+    
 }

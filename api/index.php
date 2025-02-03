@@ -55,7 +55,8 @@ $routes = [
         "payments/{id}" => [$paymentController, 'getById'],        
         "payments/total/{person_id}/{person_type}" => [$paymentController, 'getTotalPaidByPersonId'],
         "payments/list/{person_id}/{person_type}" => [$paymentController, 'getPaymentsByPerson'],
-        "loans/pending-commission/{person_type}/{person_id}" => [$loanController, 'getPendingCommission']
+        "loans/pending-commission/{person_type}/{person_id}" => [$loanController, 'getPendingCommission'],
+        "loans/pending-amounts/{person_type}" => [$loanController, 'getAllPersonsWithPendingAmounts']
     ],
     "PUT" => [
         "loans/{id}" => [$loanController, 'updateLoan'], // Update
