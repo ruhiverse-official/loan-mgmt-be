@@ -61,3 +61,41 @@ CREATE TABLE payments (
     FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE,
     FOREIGN KEY (person_id) REFERENCES referral_person(id) ON DELETE CASCADE
 );
+
+CREATE TABLE expense_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE expenses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    expense_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES expense_categories(id) ON DELETE CASCADE
+);
+
+INSERT INTO expense_categories (name) VALUES
+('Office Rent'),
+('Electricity Bill'),
+('Internet & Telephone'),
+('Tea & Snacks'),
+('Stationery'),
+('Travel & Transportation'),
+('Maintenance & Repairs'),
+('Marketing & Advertising'),
+('Salaries & Wages'),
+('Software Subscriptions'),
+('Bank Charges'),
+('Consulting & Professional Fees'),
+('Insurance'),
+('Office Supplies'),
+('Fuel Expenses'),
+('Event & Meetings'),
+('Legal Fees'),
+('Miscellaneous Expenses');

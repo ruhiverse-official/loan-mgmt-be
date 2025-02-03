@@ -5,6 +5,8 @@ require_once "controllers/AuthController.php";
 require_once "controllers/LoanController.php";
 require_once "controllers/ReferralController.php";
 require_once "controllers/AccountController.php";
+require_once "controllers/ExpenseCategoryController.php";
+require_once "controllers/ExpenseController.php";
 require_once "middlewares/AuthMiddleware.php";
 require_once "middlewares/CorsMiddleware.php";
 
@@ -24,6 +26,8 @@ $authController = new AuthController();
 $loanController = new LoanController();
 $referralController = new ReferralController();
 $accountController = new AccountController();
+$categoryController = new ExpenseCategoryController();
+$expenseController = new ExpenseController();
 
 // Define Routes
 $routes = [
@@ -32,6 +36,8 @@ $routes = [
         "loans" => [$loanController, 'createLoan'], // Create
         "referrals" => [$referralController, 'create'], // Create Referral
         "accounts" => [$accountController, 'create'],  // Create Account
+        "expense-categories" => [$categoryController, 'create'],
+        "expenses" => [$expenseController, 'create']
     ],
     "GET" => [
         "loans" => [$loanController, 'getAllLoans'], // List all loans
@@ -40,6 +46,8 @@ $routes = [
         "accounts" => [$accountController, 'getAll'],  // List Accounts
         "referrals/{id}" => [$referralController, 'getById'], // Get Referral by ID
         "accounts/{id}" => [$accountController, 'getById'],  // Get Account by ID
+        "expense-categories" => [$categoryController, 'getAll'],
+        "expenses" => [$expenseController, 'getAll']
     ],
     "PUT" => [
         "loans/{id}" => [$loanController, 'updateLoan'], // Update
@@ -50,6 +58,8 @@ $routes = [
         "loans/{id}" => [$loanController, 'deleteLoan'], // Delete
         "referrals/{id}" => [$referralController, 'delete'], // Delete Referral
         "accounts/{id}" => [$accountController, 'delete'],   // Delete Account
+        "expense-categories/{id}" => [$categoryController, 'delete'],
+        "expenses/{id}" => [$expenseController, 'delete']
     ]
 ];
 
