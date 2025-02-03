@@ -70,4 +70,43 @@ class Loan {
         $stmt->bindParam(":id", $id);
         return $stmt->execute();
     }
+
+    // Get total amount owed to referral/account
+    public function getPendingCommission($person_id, $person_type) {
+        $commission_field = ($person_type === 'Referral') ? 'referral_commission_rate' : 'account_commission_rate';
+
+        // 1️⃣ Calculate total commission for approved loans
+        $query = "SELECT SUM(approved_loan_amount * $commission_field / 100) AS total_commission
+                  FROM " . $this->table . " 
+                  WHERE status = 'Approved' 
+                  AND " . ($person_type === 'Referral' ? 'referral_person_id' : 'account_person_id') . " = :person_id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":person_id", $person_id);
+        $stmt->execute();
+        $commission_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total_commission = $commission_result['total_commission'] ?? 0;
+
+        // 2️⃣ Get total amount already paid
+        $payment_query = "SELECT SUM(amount) AS total_paid 
+                          FROM payments 
+                          WHERE person_id = :person_id 
+                          AND person_type = :person_type";
+
+        $stmt = $this->conn->prepare($payment_query);
+        $stmt->bindParam(":person_id", $person_id);
+        $stmt->bindParam(":person_type", $person_type);
+        $stmt->execute();
+        $payment_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total_paid = $payment_result['total_paid'] ?? 0;
+
+        // 3️⃣ Calculate remaining amount
+        $remaining_amount = $total_commission - $total_paid;
+
+        return [
+            'total_commission' => (float) $total_commission,
+            'total_paid' => (float) $total_paid,
+            'remaining_balance' => (float) $remaining_amount
+        ];
+    }
 }

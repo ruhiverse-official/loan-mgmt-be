@@ -67,4 +67,14 @@ class LoanController {
             Response::send(false, "Failed to delete loan");
         }
     }
+
+    // Get pending commission amount for a Referral or Account person
+    public function getPendingCommission($person_type, $person_id) {
+        if (!in_array($person_type, ['Referral', 'Account'])) {
+            Response::send(false, "Invalid person type. Must be 'Referral' or 'Account'.");
+        }
+
+        $pending_commission = $this->loanModel->getPendingCommission($person_id, $person_type);
+        Response::send(true, "Pending commission retrieved successfully", $pending_commission);
+    }
 }

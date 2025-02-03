@@ -52,13 +52,11 @@ CREATE TABLE loans (
 -- Payments Table
 CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    loan_id INT NOT NULL,
     person_type ENUM('Referral', 'Account') NOT NULL,
     person_id INT NOT NULL,
-    amount DECIMAL(15, 2) NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
     paid_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     remarks TEXT,
-    FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE,
     FOREIGN KEY (person_id) REFERENCES referral_person(id) ON DELETE CASCADE
 );
 

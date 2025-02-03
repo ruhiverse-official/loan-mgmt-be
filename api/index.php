@@ -7,6 +7,7 @@ require_once "controllers/ReferralController.php";
 require_once "controllers/AccountController.php";
 require_once "controllers/ExpenseCategoryController.php";
 require_once "controllers/ExpenseController.php";
+require_once "controllers/PaymentController.php";
 require_once "middlewares/AuthMiddleware.php";
 require_once "middlewares/CorsMiddleware.php";
 
@@ -28,6 +29,7 @@ $referralController = new ReferralController();
 $accountController = new AccountController();
 $categoryController = new ExpenseCategoryController();
 $expenseController = new ExpenseController();
+$paymentController = new PaymentController();
 
 // Define Routes
 $routes = [
@@ -37,7 +39,8 @@ $routes = [
         "referrals" => [$referralController, 'create'], // Create Referral
         "accounts" => [$accountController, 'create'],  // Create Account
         "expense-categories" => [$categoryController, 'create'],
-        "expenses" => [$expenseController, 'create']
+        "expenses" => [$expenseController, 'create'],
+        "payments" => [$paymentController, 'create']
     ],
     "GET" => [
         "loans" => [$loanController, 'getAllLoans'], // List all loans
@@ -47,19 +50,26 @@ $routes = [
         "referrals/{id}" => [$referralController, 'getById'], // Get Referral by ID
         "accounts/{id}" => [$accountController, 'getById'],  // Get Account by ID
         "expense-categories" => [$categoryController, 'getAll'],
-        "expenses" => [$expenseController, 'getAll']
+        "expenses" => [$expenseController, 'getAll'],
+        "payments" => [$paymentController, 'getAll'],
+        "payments/{id}" => [$paymentController, 'getById'],        
+        "payments/total/{person_id}/{person_type}" => [$paymentController, 'getTotalPaidByPersonId'],
+        "payments/list/{person_id}/{person_type}" => [$paymentController, 'getPaymentsByPerson'],
+        "loans/pending-commission/{person_type}/{person_id}" => [$loanController, 'getPendingCommission']
     ],
     "PUT" => [
         "loans/{id}" => [$loanController, 'updateLoan'], // Update
         "referrals/{id}" => [$referralController, 'update'], // Update Referral
         "accounts/{id}" => [$accountController, 'update'],   // Update Account
+        "payments/{id}" => [$paymentController, 'update']
     ],
     "DELETE" => [
         "loans/{id}" => [$loanController, 'deleteLoan'], // Delete
         "referrals/{id}" => [$referralController, 'delete'], // Delete Referral
         "accounts/{id}" => [$accountController, 'delete'],   // Delete Account
         "expense-categories/{id}" => [$categoryController, 'delete'],
-        "expenses/{id}" => [$expenseController, 'delete']
+        "expenses/{id}" => [$expenseController, 'delete'],
+        "payments/{id}" => [$paymentController, 'delete']
     ]
 ];
 
