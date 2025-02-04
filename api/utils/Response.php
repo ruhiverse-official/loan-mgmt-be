@@ -1,6 +1,9 @@
 <?php
 class Response {
-    public static function send($status, $message, $data = null) {
+    public static function send($status, $message, $data = null, $http_code = 200) {
+        // Set the HTTP response code
+        http_response_code($http_code);
+
         // Start output buffering if not already started
         if (!ob_get_level()) {
             ob_start();
@@ -15,7 +18,7 @@ class Response {
         ob_clean();
         
         echo json_encode(['status' => $status, 'message' => $message, 'data' => $data]);
-        
+
         // Send output and stop execution
         ob_end_flush();
         exit();
