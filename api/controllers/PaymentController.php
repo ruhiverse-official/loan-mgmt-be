@@ -72,5 +72,10 @@ class PaymentController {
         $payments = $this->paymentModel->getPaymentsByPerson($person_id, $person_type);
         Response::send(true, "Payments retrieved successfully", $payments);
     }
-    
+
+    // Get Profit Summary
+    public function getProfitSummary() {
+        $profitSummary = $this->paymentModel->getProfitSummary();
+        Response::send(true, "Profit summary retrieved successfully", $profitSummary);
+    }
 }

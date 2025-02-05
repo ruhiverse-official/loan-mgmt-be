@@ -99,3 +99,10 @@ INSERT INTO expense_categories (name) VALUES
 ('Event & Meetings'),
 ('Legal Fees'),
 ('Miscellaneous Expenses');
+
+
+ALTER TABLE loans 
+ADD COLUMN bank_name VARCHAR(255) NOT NULL AFTER customer_mobile,
+ADD COLUMN commission DECIMAL(15, 2) NOT NULL AFTER bank_name,
+CHANGE COLUMN referral_commission_rate referral_commission DECIMAL(15,2),
+CHANGE COLUMN account_commission_rate account_commission DECIMAL(15,2);

@@ -79,16 +79,16 @@ class Payment {
         return $stmt->execute();
     }
 
-    // Get total amount paid by referral/account
+    // Get total amount paid and pending by referral/account
     public function getTotalPaidAndPendingByPersonId($person_id, $person_type) {
         $column = $this->getColumnByPersonType($person_type);
-        $commission_column = ($person_type === 'Referral') ? 'referral_commission_rate' : 'account_commission_rate';
+        $commission_column = ($person_type === 'Referral') ? 'referral_commission' : 'account_commission';
         $loan_column = ($person_type === 'Referral') ? 'referral_person_id' : 'account_person_id';
-    
+
         if (!$column) {
             throw new Exception("Invalid person type");
         }
-    
+
         // 1️⃣ Get Total Paid Amount from `payments`
         $query = "SELECT SUM(amount) as total_paid FROM payments WHERE $column = :person_id";
         $stmt = $this->conn->prepare($query);
@@ -96,25 +96,24 @@ class Payment {
         $stmt->execute();
         $payment_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $total_paid = $payment_result['total_paid'] ?? 0;
-    
+
         // 2️⃣ Get Total Commission from `loans`
-        $loan_query = "SELECT SUM(approved_loan_amount * $commission_column / 100) AS total_commission 
+        $loan_query = "SELECT SUM($commission_column) AS total_commission 
                        FROM loans WHERE status = 'Approved' AND $loan_column = :person_id";
         $stmt = $this->conn->prepare($loan_query);
         $stmt->bindParam(":person_id", $person_id);
         $stmt->execute();
         $commission_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $total_commission = $commission_result['total_commission'] ?? 0;
-    
+
         // 3️⃣ Calculate Total Pending Amount
         $total_pending = $total_commission - $total_paid;
-    
+
         return [
             'total_paid' => (float) $total_paid,
             'total_pending' => (float) $total_pending
         ];
     }
-    
 
     // Get payment history by referral/account ID
     public function getPaymentsByPerson($person_id, $person_type) {
@@ -141,4 +140,58 @@ class Payment {
         ];
         return $map[$person_type] ?? null;
     }
+
+    public function getProfitSummary() {
+        try {
+            // 1️⃣ Get Total Commission Earned from loans
+            $commission_query = "SELECT SUM(commission) AS total_commission_earned 
+                                 FROM loans WHERE status = 'Approved'";
+            $stmt = $this->conn->prepare($commission_query);
+            $stmt->execute();
+            $commission_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total_commission_earned = $commission_result['total_commission_earned'] ?? 0;
+    
+            // 2️⃣ Get Total Commission Given from payments
+            $given_query = "SELECT SUM(amount) AS total_commission_given FROM payments";
+            $stmt = $this->conn->prepare($given_query);
+            $stmt->execute();
+            $given_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total_commission_given = $given_result['total_commission_given'] ?? 0;
+    
+            // 3️⃣ Get Total Expenses
+            $expense_query = "SELECT SUM(amount) AS total_expense FROM expenses";
+            $stmt = $this->conn->prepare($expense_query);
+            $stmt->execute();
+            $expense_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total_expense = $expense_result['total_expense'] ?? 0;
+    
+            // 4️⃣ Get Pending Commission to Give
+            $pending_query = "SELECT SUM(loans.referral_commission + loans.account_commission) AS pending_commission 
+                              FROM loans 
+                              LEFT JOIN payments ON (loans.referral_person_id = payments.referral_id OR loans.account_person_id = payments.account_id) 
+                              WHERE loans.status = 'Approved' 
+                              AND (loans.referral_commission + loans.account_commission) > 
+                                  (SELECT IFNULL(SUM(amount), 0) FROM payments 
+                                   WHERE payments.referral_id = loans.referral_person_id 
+                                      OR payments.account_id = loans.account_person_id)";
+            $stmt = $this->conn->prepare($pending_query);
+            $stmt->execute();
+            $pending_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $pending_commission = $pending_result['pending_commission'] ?? 0;
+    
+            // 5️⃣ Calculate Net Profit
+            $net_profit = $total_commission_earned - ($total_commission_given + $total_expense);
+    
+            return [
+                'total_commission_earned' => (float) $total_commission_earned,
+                'total_commission_given' => (float) $total_commission_given,
+                'total_expense' => (float) $total_expense,
+                'pending_commission_to_give' => (float) $pending_commission,
+                'net_profit' => (float) $net_profit
+            ];
+        } catch (PDOException $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+    
 }
