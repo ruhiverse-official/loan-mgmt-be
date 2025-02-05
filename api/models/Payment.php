@@ -165,33 +165,35 @@ class Payment {
             $expense_result = $stmt->fetch(PDO::FETCH_ASSOC);
             $total_expense = $expense_result['total_expense'] ?? 0;
     
-            // 4️⃣ Get Pending Commission to Give
-            $pending_query = "SELECT SUM(loans.referral_commission + loans.account_commission) AS pending_commission 
-                              FROM loans 
-                              LEFT JOIN payments ON (loans.referral_person_id = payments.referral_id OR loans.account_person_id = payments.account_id) 
-                              WHERE loans.status = 'Approved' 
-                              AND (loans.referral_commission + loans.account_commission) > 
-                                  (SELECT IFNULL(SUM(amount), 0) FROM payments 
-                                   WHERE payments.referral_id = loans.referral_person_id 
-                                      OR payments.account_id = loans.account_person_id)";
+            // 4️⃣ Get Pending Commission to Give (Commission Earned - Commission Already Paid)
+            $pending_query = "SELECT 
+                                SUM(loans.referral_commission + loans.account_commission) AS total_commission, 
+                                (SELECT IFNULL(SUM(amount), 0) FROM payments) AS total_paid,
+                                (SUM(loans.referral_commission + loans.account_commission) - 
+                                 (SELECT IFNULL(SUM(amount), 0) FROM payments)) AS pending_commission
+                              FROM loans
+                              WHERE loans.status = 'Approved'";
+    
             $stmt = $this->conn->prepare($pending_query);
             $stmt->execute();
             $pending_result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $pending_commission = $pending_result['pending_commission'] ?? 0;
+            $total_commission_to_give = $pending_result['total_commission'] ?? 0;
+            $total_paid = $pending_result['total_paid'] ?? 0;
+            $pending_commission = max($total_commission_to_give - $total_paid, 0); // Ensure it doesn't go negative
     
             // 5️⃣ Calculate Net Profit
             $net_profit = $total_commission_earned - ($total_commission_given + $total_expense);
     
             return [
-                'total_commission_earned' => (float) $total_commission_earned,
-                'total_commission_given' => (float) $total_commission_given,
-                'total_expense' => (float) $total_expense,
-                'pending_commission_to_give' => (float) $pending_commission,
-                'net_profit' => (float) $net_profit
+                'total_commission_earned' => (float) $total_commission_earned, // Total earned from approved loans
+                'total_commission_given' => (float) $total_commission_given,   // Total paid out so far
+                'total_expense' => (float) $total_expense,                     // Total operational expenses
+                'pending_commission_to_give' => (float) $pending_commission,   // Remaining commission yet to be paid
+                'net_profit' => (float) $net_profit                            // Final profit after all expenses
             ];
         } catch (PDOException $e) {
             throw new Exception($e->getMessage());
         }
-    }
+    }    
     
 }
