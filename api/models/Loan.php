@@ -50,18 +50,30 @@ class Loan {
                   SET customer_name = :customer_name, 
                       customer_mobile = :customer_mobile, 
                       required_loan_amount = :required_loan_amount, 
-                      status = :status 
+                      approved_loan_amount = :approved_loan_amount, 
+                      status = :status, 
+                      referral_person_id = :referral_person_id, 
+                      referral_commission_rate = :referral_commission_rate, 
+                      account_person_id = :account_person_id, 
+                      account_commission_rate = :account_commission_rate
                   WHERE id = :id";
+    
         $stmt = $this->conn->prepare($query);
-
+    
         $stmt->bindParam(":customer_name", $data['customer_name']);
         $stmt->bindParam(":customer_mobile", $data['customer_mobile']);
         $stmt->bindParam(":required_loan_amount", $data['required_loan_amount']);
+        $stmt->bindParam(":approved_loan_amount", $data['approved_loan_amount']);
         $stmt->bindParam(":status", $data['status']);
+        $stmt->bindParam(":referral_person_id", $data['referral_person_id']);
+        $stmt->bindParam(":referral_commission_rate", $data['referral_commission_rate']);
+        $stmt->bindParam(":account_person_id", $data['account_person_id']);
+        $stmt->bindParam(":account_commission_rate", $data['account_commission_rate']);
         $stmt->bindParam(":id", $id);
-
+    
         return $stmt->execute();
     }
+    
 
     // Delete a loan by ID
     public function delete($id) {
