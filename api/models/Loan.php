@@ -34,11 +34,18 @@ class Loan {
 
     // Get all loans
     public function getAll() {
-        $query = "SELECT * FROM " . $this->table;
+        $query = "SELECT loans.*, 
+                         referral_person.name AS referral_name, 
+                         account_person.name AS accountant_name 
+                  FROM " . $this->table . "
+                  LEFT JOIN referral_person ON loans.referral_person_id = referral_person.id
+                  LEFT JOIN account_person ON loans.account_person_id = account_person.id";
+    
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 
     // Get a loan by ID
     public function getById($id) {
