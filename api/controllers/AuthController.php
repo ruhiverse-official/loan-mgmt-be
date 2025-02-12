@@ -39,7 +39,7 @@ class AuthController {
             Response::send(false, "Invalid token", null, 401);
         }
 
-        $admin = $this->admin->getAdminById($decoded->id);
+        $admin = $this->admin->getAdminById($decoded['id']);
         if ($admin) {
             Response::send(true, "Profile retrieved", [
                 'id' => $admin['id'],
