@@ -106,3 +106,9 @@ ADD COLUMN bank_name VARCHAR(255) NOT NULL AFTER customer_mobile,
 ADD COLUMN commission DECIMAL(15, 2) NOT NULL AFTER bank_name,
 CHANGE COLUMN referral_commission_rate referral_commission DECIMAL(15,2),
 CHANGE COLUMN account_commission_rate account_commission DECIMAL(15,2);
+
+
+
+ALTER TABLE admin 
+ADD COLUMN first_name VARCHAR(255) NOT NULL AFTER username,
+ADD COLUMN last_name VARCHAR(255) NOT NULL AFTER first_name;

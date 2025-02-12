@@ -9,6 +9,14 @@ class Admin {
         $this->conn = $db;
     }
 
+    public function getAdminById($id) {
+        $query = "SELECT id, username, first_name, last_name FROM admin WHERE id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function login($username, $password) {
         $query = "SELECT * FROM {$this->table} WHERE username = :username";
         $stmt = $this->conn->prepare($query);

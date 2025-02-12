@@ -25,4 +25,30 @@ class AuthController {
             Response::send(false, "Invalid credentials", null, 401);
         }
     }
+
+    public function getProfile() {
+        $headers = getallheaders();
+        if (!isset($headers['Authorization'])) {
+            Response::send(false, "Unauthorized", null, 401);
+        }
+
+        $token = str_replace('Bearer ', '', $headers['Authorization']);
+        $decoded = JwtHandler::validateToken($token);
+
+        if (!$decoded) {
+            Response::send(false, "Invalid token", null, 401);
+        }
+
+        $admin = $this->admin->getAdminById($decoded->id);
+        if ($admin) {
+            Response::send(true, "Profile retrieved", [
+                'id' => $admin['id'],
+                'username' => $admin['username'],
+                'first_name' => $admin['first_name'],
+                'last_name' => $admin['last_name']
+            ]);
+        } else {
+            Response::send(false, "Admin not found", null, 404);
+        }
+    }
 }
