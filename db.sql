@@ -55,12 +55,15 @@ CREATE TABLE payments (
     person_type ENUM('Referral', 'Account') NOT NULL,
     referral_id INT NULL,
     account_id INT NULL,
+    loan_id INT NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
     paid_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     remarks TEXT,
     FOREIGN KEY (referral_id) REFERENCES referral_person(id) ON DELETE CASCADE,
-    FOREIGN KEY (account_id) REFERENCES account_person(id) ON DELETE CASCADE
+    FOREIGN KEY (account_id) REFERENCES account_person(id) ON DELETE CASCADE,
+    FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE expense_categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
