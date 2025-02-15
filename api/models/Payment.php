@@ -80,57 +80,64 @@ class Payment {
     }
 
     // Get total amount paid and pending by referral/account
-    public function getTotalPaidAndPendingByPersonId($person_id, $person_type) {
+    public function getTotalPaidAndPendingByPersonId($person_id, $person_type, $loan_id) {
         $column = $this->getColumnByPersonType($person_type);
         $commission_column = ($person_type === 'Referral') ? 'referral_commission' : 'account_commission';
         $loan_column = ($person_type === 'Referral') ? 'referral_person_id' : 'account_person_id';
-
+    
         if (!$column) {
             throw new Exception("Invalid person type");
         }
-
-        // 1️⃣ Get Total Paid Amount from `payments`
-        $query = "SELECT SUM(amount) as total_paid FROM payments WHERE $column = :person_id";
+    
+        // 1️⃣ Get Total Paid Amount from `payments` (filtered by loan_id)
+        $query = "SELECT SUM(amount) as total_paid FROM payments 
+                  WHERE $column = :person_id AND loan_id = :loan_id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":person_id", $person_id);
+        $stmt->bindParam(":loan_id", $loan_id);
         $stmt->execute();
         $payment_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $total_paid = $payment_result['total_paid'] ?? 0;
-
-        // 2️⃣ Get Total Commission from `loans`
+    
+        // 2️⃣ Get Total Commission from `loans` (filtered by loan_id)
         $loan_query = "SELECT SUM($commission_column) AS total_commission 
-                       FROM loans WHERE status = 'Approved' AND $loan_column = :person_id";
+                       FROM loans 
+                       WHERE status = 'Approved' AND $loan_column = :person_id AND id = :loan_id";
         $stmt = $this->conn->prepare($loan_query);
         $stmt->bindParam(":person_id", $person_id);
+        $stmt->bindParam(":loan_id", $loan_id);
         $stmt->execute();
         $commission_result = $stmt->fetch(PDO::FETCH_ASSOC);
         $total_commission = $commission_result['total_commission'] ?? 0;
-
+    
         // 3️⃣ Calculate Total Pending Amount
         $total_pending = $total_commission - $total_paid;
-
+    
         return [
             'total_paid' => (float) $total_paid,
             'total_pending' => (float) $total_pending
         ];
-    }
+    }    
 
     // Get payment history by referral/account ID
-    public function getPaymentsByPerson($person_id, $person_type) {
+    public function getPaymentsByPerson($person_id, $person_type, $loan_id) {
         $column = $this->getColumnByPersonType($person_type);
-
+    
         if (!$column) {
             throw new Exception("Invalid person type");
         }
-
+    
         $query = "SELECT * FROM " . $this->table . " 
-                  WHERE $column = :person_id
+                  WHERE $column = :person_id 
+                  AND loan_id = :loan_id
                   ORDER BY paid_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":person_id", $person_id);
+        $stmt->bindParam(":loan_id", $loan_id);
         $stmt->execute();
+        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    }    
 
     // Helper function to get correct column based on person_type
     private function getColumnByPersonType($person_type) {

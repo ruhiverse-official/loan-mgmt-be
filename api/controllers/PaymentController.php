@@ -62,14 +62,14 @@ class PaymentController {
     }
 
     // Get total payment made by referral/account
-    public function getTotalPaidAndPendingByPersonId($person_id, $person_type) {
-        $payment = $this->paymentModel->getTotalPaidAndPendingByPersonId($person_id, $person_type);
+    public function getTotalPaidAndPendingByPersonId($person_id, $person_type, $loan_id) {
+        $payment = $this->paymentModel->getTotalPaidAndPendingByPersonId($person_id, $person_type, $loan_id);
         Response::send(true, "Total payment retrieved successfully", $payment);
     }
 
     // Get all payments by referral/account
-    public function getPaymentsByPerson($person_id, $person_type) {
-        $payments = $this->paymentModel->getPaymentsByPerson($person_id, $person_type);
+    public function getPaymentsByPerson($person_id, $person_type, $loan_id) {
+        $payments = $this->paymentModel->getPaymentsByPerson($person_id, $person_type, $loan_id);
         Response::send(true, "Payments retrieved successfully", $payments);
     }
 
