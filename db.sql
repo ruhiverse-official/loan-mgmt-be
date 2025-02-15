@@ -37,7 +37,6 @@ CREATE TABLE loans (
     customer_name VARCHAR(255) NOT NULL,
     customer_mobile VARCHAR(20) NOT NULL,
     required_loan_amount DECIMAL(15, 2) NOT NULL,
-    approved_loan_amount DECIMAL(15, 2),
     status ENUM('Pending', 'Approved', 'Rejected', 'Completed') DEFAULT 'Pending',
     referral_person_id INT,
     referral_commission_rate DECIMAL(5, 2),

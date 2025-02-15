@@ -10,9 +10,9 @@ class Loan {
 
     public function create($data) {
         $query = "INSERT INTO " . $this->table . " 
-                  (customer_name, customer_mobile, bank_name, required_loan_amount, approved_loan_amount, status, 
+                  (customer_name, customer_mobile, bank_name, required_loan_amount, status, 
                    referral_person_id, referral_commission, account_person_id, account_commission, commission) 
-                  VALUES (:customer_name, :customer_mobile, :bank_name, :required_loan_amount, :approved_loan_amount, :status, 
+                  VALUES (:customer_name, :customer_mobile, :bank_name, :required_loan_amount, :status, 
                           :referral_person_id, :referral_commission, :account_person_id, :account_commission, :commission)";
         
         $stmt = $this->conn->prepare($query);
@@ -21,7 +21,6 @@ class Loan {
         $stmt->bindParam(":customer_mobile", $data['customer_mobile']);
         $stmt->bindParam(":bank_name", $data['bank_name']);
         $stmt->bindParam(":required_loan_amount", $data['required_loan_amount']);
-        $stmt->bindParam(":approved_loan_amount", $data['approved_loan_amount']);
         $stmt->bindParam(":status", $data['status']);
         $stmt->bindParam(":referral_person_id", $data['referral_person_id']);
         $stmt->bindParam(":referral_commission", $data['referral_commission']);
@@ -36,10 +35,22 @@ class Loan {
     public function getAll() {
         $query = "SELECT loans.*, 
                          referral_person.name AS referral_name, 
-                         account_person.name AS accountant_name 
+                         account_person.name AS accountant_name,
+                         -- Total Paid by Referral
+                         COALESCE(SUM(CASE WHEN payments.person_type = 'Referral' THEN payments.amount ELSE 0 END), 0) AS total_paid_referral,
+                         -- Total Paid by Accountant
+                         COALESCE(SUM(CASE WHEN payments.person_type = 'Account' THEN payments.amount ELSE 0 END), 0) AS total_paid_account,
+                         -- Total Remaining for Referral
+                         (loans.referral_commission - 
+                          COALESCE(SUM(CASE WHEN payments.person_type = 'Referral' THEN payments.amount ELSE 0 END), 0)) AS total_remaining_referral,
+                         -- Total Remaining for Accountant
+                         (loans.account_commission - 
+                          COALESCE(SUM(CASE WHEN payments.person_type = 'Account' THEN payments.amount ELSE 0 END), 0)) AS total_remaining_account
                   FROM " . $this->table . "
                   LEFT JOIN referral_person ON loans.referral_person_id = referral_person.id
-                  LEFT JOIN account_person ON loans.account_person_id = account_person.id";
+                  LEFT JOIN account_person ON loans.account_person_id = account_person.id
+                  LEFT JOIN payments ON loans.id = payments.loan_id
+                  GROUP BY loans.id";
     
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -63,7 +74,6 @@ class Loan {
                       customer_mobile = :customer_mobile, 
                       bank_name = :bank_name, 
                       required_loan_amount = :required_loan_amount, 
-                      approved_loan_amount = :approved_loan_amount, 
                       status = :status, 
                       referral_person_id = :referral_person_id, 
                       referral_commission = :referral_commission, 
@@ -79,7 +89,6 @@ class Loan {
         $stmt->bindParam(":customer_mobile", $data['customer_mobile']);
         $stmt->bindParam(":bank_name", $data['bank_name']);
         $stmt->bindParam(":required_loan_amount", $data['required_loan_amount']);
-        $stmt->bindParam(":approved_loan_amount", $data['approved_loan_amount']);
         $stmt->bindParam(":status", $data['status']);
         $stmt->bindParam(":referral_person_id", $data['referral_person_id']);
         $stmt->bindParam(":referral_commission", $data['referral_commission']);
