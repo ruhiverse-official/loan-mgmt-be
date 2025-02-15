@@ -34,11 +34,12 @@ class Payment {
                 throw new Exception("Invalid person type");
             }
 
-            $query = "INSERT INTO " . $this->table . " (person_type, $column, amount, remarks) 
-                      VALUES (:person_type, :person_id, :amount, :remarks)";
+            $query = "INSERT INTO " . $this->table . " (person_type, $column, loan_id, amount, remarks) 
+                      VALUES (:person_type, :person_id, :loan_id, :amount, :remarks)";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":person_type", $data['person_type']);
             $stmt->bindParam(":person_id", $data['person_id']);
+            $stmt->bindParam(":loan_id", $data['loan_id']);
             $stmt->bindParam(":amount", $data['amount']);
             $stmt->bindParam(":remarks", $data['remarks']);
             return $stmt->execute();

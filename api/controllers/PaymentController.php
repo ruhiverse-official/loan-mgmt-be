@@ -30,7 +30,7 @@ class PaymentController {
     public function create() {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['person_type']) || empty($data['person_id']) || empty($data['amount'])) {
+        if (empty($data['loan_id']) || empty($data['person_type']) || empty($data['person_id']) || empty($data['amount'])) {
             Response::send(false, "Invalid input data");
         }
 
