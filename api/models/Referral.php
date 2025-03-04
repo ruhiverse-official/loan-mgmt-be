@@ -9,11 +9,20 @@ class Referral {
     }
 
     public function getAll() {
-        $query = "SELECT * FROM " . $this->table;
+        $query = "SELECT 
+                    a.*, 
+                    COALESCE(SUM(p.amount), 0) AS total_fees, 
+                    COALESCE(SUM(CASE WHEN p.paid_at IS NOT NULL THEN p.amount ELSE 0 END), 0) AS paid_fees
+                  FROM " . $this->table . " a
+                  LEFT JOIN payments p 
+                    ON a.id = p.account_id 
+                    AND p.person_type = 'Account'
+                  GROUP BY a.id";
+    
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    }    
 
     public function getById($id) {
         $query = "SELECT * FROM " . $this->table . " WHERE id = :id";

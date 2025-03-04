@@ -10,11 +10,21 @@ class Account {
 
     // Get all account persons
     public function getAll() {
-        $query = "SELECT * FROM " . $this->table;
+        $query = "SELECT 
+                    a.*, 
+                    COALESCE(SUM(p.amount), 0) AS total_fees, 
+                    COALESCE(SUM(CASE WHEN p.paid_at IS NOT NULL THEN p.amount ELSE 0 END), 0) AS paid_fees
+                  FROM account_person a
+                  LEFT JOIN payments p 
+                    ON a.id = p.account_id 
+                    AND p.person_type = 'Account' 
+                    AND p.account_id IS NOT NULL
+                  GROUP BY a.id, a.name, a.mobile, a.email, a.created_at, a.updated_at";
+    
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    }    
 
     // Get an account person by ID
     public function getById($id) {
