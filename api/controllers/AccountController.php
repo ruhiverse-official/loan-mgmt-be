@@ -1,13 +1,18 @@
 <?php
 require_once __DIR__ . '/../models/Account.php';
+require_once __DIR__ . '/../models/Referral.php';
 require_once __DIR__ . '/../utils/Response.php';
 
 class AccountController {
     private $accountModel;
+    private $referralModel;
 
     public function __construct() {
         $database = new Database();
-        $this->accountModel = new Account($database->getConnection());
+        $db = $database->getConnection();
+        
+        $this->accountModel = new Account($db);
+        $this->referralModel = new Referral($db);
     }
 
     public function getCommissionDetails($id, $type) {
@@ -22,7 +27,9 @@ class AccountController {
         $commissionColumn = ($type === 'Account') ? 'account_commission' : 'referral_commission';
     
         // Fetch person details
-        $person = ($type === 'Account') ? $this->accountModel->getById($id) : (new Referral())->getById($id);
+        $person = ($type === 'Account') 
+            ? $this->accountModel->getById($id) 
+            : $this->referralModel->getById($id);
         
         if (!$person) {
             Response::send(false, ucfirst($type) . " person not found.");
