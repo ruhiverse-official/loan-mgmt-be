@@ -10,6 +10,43 @@ class AccountController {
         $this->accountModel = new Account($database->getConnection());
     }
 
+    public function getCommissionDetails($id, $type) {
+        // Validate input type
+        if (!in_array($type, ['Account', 'Referral'])) {
+            Response::send(false, "Invalid type. Must be 'Account' or 'Referral'.");
+            return;
+        }
+    
+        // Determine the table and commission column based on type
+        $personColumn = ($type === 'Account') ? 'account_person_id' : 'referral_person_id';
+        $commissionColumn = ($type === 'Account') ? 'account_commission' : 'referral_commission';
+    
+        // Fetch person details
+        $person = ($type === 'Account') ? $this->accountModel->getById($id) : (new Referral())->getById($id);
+        
+        if (!$person) {
+            Response::send(false, ucfirst($type) . " person not found.");
+            return;
+        }
+    
+        // Fetch loan and commission details
+        $loans = $this->accountModel->getCommissionDetails($id, $personColumn, $commissionColumn);
+    
+        // Calculate total commission, paid fees, and balance
+        $totalCommission = array_sum(array_column($loans, 'fees'));
+        $paidFees = array_sum(array_column($loans, 'paid_fees'));
+        $balanceFees = $totalCommission - $paidFees;
+    
+        // Return JSON response
+        Response::send(true, ucfirst($type) . " commission details retrieved successfully.", [
+            "name" => $person['name'],
+            "total_commission_fees" => $totalCommission,
+            "paid_commission_fees" => $paidFees,
+            "balance_fees" => $balanceFees,
+            "loans" => $loans
+        ]);
+    }    
+
     public function getAll() {
         $accounts = $this->accountModel->getAll();
         Response::send(true, 'Accounts retrieved successfully', $accounts);

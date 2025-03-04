@@ -8,6 +8,33 @@ class Account {
         $this->conn = $db;
     }
 
+    public function getCommissionDetails($id, $personColumn, $commissionColumn) {
+        // Map column correctly based on type
+        $paymentColumn = ($personColumn === 'account_person_id') ? 'account_id' : 'referral_id';
+        $personType = ($personColumn === 'account_person_id') ? 'Account' : 'Referral';
+    
+        $query = "SELECT 
+                    l.customer_name, 
+                    l.required_loan_amount AS loan_amount, 
+                    l.$commissionColumn AS fees, 
+                    COALESCE(SUM(p.amount), 0) AS paid_fees,
+                    (l.$commissionColumn - COALESCE(SUM(p.amount), 0)) AS balance_fees
+                  FROM loans l
+                  LEFT JOIN payments p 
+                    ON l.id = p.loan_id 
+                    AND p.person_type = :personType 
+                    AND p.$paymentColumn = :id
+                  WHERE l.$personColumn = :id
+                  GROUP BY l.id, l.customer_name, l.required_loan_amount, l.$commissionColumn";
+    
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+        $stmt->bindValue(":personType", $personType, PDO::PARAM_STR);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }    
+
     // Get all account persons
     public function getAll() {
         $query = "SELECT 

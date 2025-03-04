@@ -40,7 +40,7 @@ $routes = [
         "accounts" => [$accountController, 'create'],  // Create Account
         "expense-categories" => [$categoryController, 'create'],
         "expenses" => [$expenseController, 'create'],
-        "payments" => [$paymentController, 'create']
+        "payments" => [$paymentController, 'create'],
     ],
     "GET" => [
         "loans" => [$loanController, 'getAllLoans'], // List all loans
@@ -59,6 +59,7 @@ $routes = [
         "loans/pending-amounts/{person_type}" => [$loanController, 'getAllPersonsWithPendingAmounts'],
         "profit-summary" => [$paymentController, 'getProfitSummary'],
         "profile" => [$authController, 'getProfile'],
+        "detail-by-person/{id}/{type}" => [$accountController, 'getCommissionDetails'],
     ],
     "PUT" => [
         "loans/{id}" => [$loanController, 'updateLoan'], // Update
