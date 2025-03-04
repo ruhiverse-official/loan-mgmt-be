@@ -15,8 +15,8 @@ class Referral {
                     COALESCE(SUM(CASE WHEN p.paid_at IS NOT NULL THEN p.amount ELSE 0 END), 0) AS paid_fees
                   FROM " . $this->table . " a
                   LEFT JOIN payments p 
-                    ON a.id = p.account_id 
-                    AND p.person_type = 'Account'
+                    ON a.id = p.referral_id 
+                    AND p.person_type = 'Referral'
                   GROUP BY a.id";
     
         $stmt = $this->conn->prepare($query);
