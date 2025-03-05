@@ -13,7 +13,8 @@ class Account {
         $paymentColumn = ($personColumn === 'account_person_id') ? 'account_id' : 'referral_id';
         $personType = ($personColumn === 'account_person_id') ? 'Account' : 'Referral';
     
-        $query = "SELECT 
+        $query = "SELECT
+                    l.id AS loan_id,
                     l.customer_name, 
                     l.required_loan_amount AS loan_amount, 
                     l.$commissionColumn AS fees, 
